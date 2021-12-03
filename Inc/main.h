@@ -36,6 +36,7 @@ extern "C" {
 #include "stm32f3xx_ll_cortex.h"
 #include "stm32f3xx_ll_utils.h"
 #include "stm32f3xx_ll_pwr.h"
+#include "stm32f3xx_ll_tim.h"
 #include "stm32f3xx_ll_usart.h"
 #include "stm32f3xx.h"
 #include "stm32f3xx_ll_gpio.h"
@@ -44,7 +45,32 @@ extern "C" {
 #include "stm32_assert.h"
 #endif /* USE_FULL_ASSERT */
 
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
+/* Exported types ------------------------------------------------------------*/
+/* USER CODE BEGIN ET */
+
+/* USER CODE END ET */
+
+/* Exported constants --------------------------------------------------------*/
+/* USER CODE BEGIN EC */
+
+/* USER CODE END EC */
+
+/* Exported macro ------------------------------------------------------------*/
+/* USER CODE BEGIN EM */
+
+/* USER CODE END EM */
+
+/* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+
+/* USER CODE BEGIN EFP */
+
+/* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
 #ifndef NVIC_PRIORITYGROUP_0
@@ -59,9 +85,9 @@ void Error_Handler(void);
 #define NVIC_PRIORITYGROUP_4         ((uint32_t)0x00000003) /*!< 4 bits for pre-emption priority,
                                                                  0 bit  for subpriority */
 #endif
+/* USER CODE BEGIN Private defines */
 
-
-/* Structure data type to store amount of small and capital letters. */
+/* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }

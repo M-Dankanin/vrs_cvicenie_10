@@ -48,11 +48,11 @@ void MX_USART2_UART_Init(void)
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
-  
+
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  /**USART2 GPIO Configuration  
+  /**USART2 GPIO Configuration
   PA2   ------> USART2_TX
-  PA15   ------> USART2_RX 
+  PA15   ------> USART2_RX
   */
   GPIO_InitStruct.Pin = LL_GPIO_PIN_2|LL_GPIO_PIN_15;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
@@ -68,7 +68,7 @@ void MX_USART2_UART_Init(void)
    * You can use configuration from example program and modify it.
    * For more information about DMA registers, refer to reference manual.
    */
-  
+
   /* USART2_RX Init */
 
   	  // type DMA USART Rx configuration here
