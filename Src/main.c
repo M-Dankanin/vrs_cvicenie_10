@@ -25,6 +25,7 @@
 #include "usart.h"
 #include "gpio.h"
 #include "stdio.h"
+#include "string.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,20 +50,21 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void proccesDmaData(uint8_t sign);
-void countCharacters(char *data, uint8_t len);
+void parseCommand(char *data, uint8_t len);
 
 /* Space for your global variables. */
 
 	// type your global variables here:
-uint8_t lowercase_count;
-uint8_t uppercase_count;
+int aktualna_intenzita = 0;
+int ziadana_intenzita = 0;
+int smer = 1;
+int rezim = 0;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -106,7 +108,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART2_UART_Init();
-  MX_TIM3_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   /* Space for your local variables, callback registration ...*/
@@ -120,12 +122,6 @@ int main(void)
   {
     /* USER CODE END WHILE */
  	  	  //type your code here:
-	  uint8_t string[150];
-	  uint16_t occupied_memory = DMA_USART2_BUFFER_SIZE - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_6);
-	  uint8_t size = sprintf((char*)string, // @suppress("Float formatting support")
-			  "\r\nBuffer capacity: %d bytes, occupied memory: %d bytes, load [in %%]: %.1f\r\n",
-			  DMA_USART2_BUFFER_SIZE, occupied_memory, (float)occupied_memory/DMA_USART2_BUFFER_SIZE*100);
-	  USART2_PutBuffer(string, size);
 
 	  LL_mDelay(1000);
     /* USER CODE BEGIN 3 */
@@ -177,7 +173,10 @@ void proccesDmaData(uint8_t sign) {
 	static uint8_t started;
 	static uint8_t pos;
 
-	if (sign == '#') {
+	if (sign == '$' && started == 1) {
+		started = 2;
+	}
+	if (sign == '$' && started == 0) {
 		started = 1;
 	} else if (started == 0) {
 		return;
@@ -191,29 +190,62 @@ void proccesDmaData(uint8_t sign) {
 		pos = 0;
 	}
 
-	if ((sign == '$') && (started)) {
-		countCharacters(buffer, pos);
+	if ((sign == '$') && (started == 2)) {
+		parseCommand(buffer, pos);
 		uint8_t string[150];
-		uint8_t size = sprintf((char*) string,
-						"Number of lowercase letters is %d, number of uppercase letters is %d\n\r",
-						lowercase_count, uppercase_count);
-		USART2_PutBuffer(string, size);
+		if (rezim) {
+			uint8_t size = sprintf((char*) string,
+					"Rezim: manual, ziadana intenzita: %d\n\r",
+					ziadana_intenzita);
+			USART2_PutBuffer(string, size);
+		} else {
+			uint8_t size = sprintf((char*) string,
+					"Rezim: auto, ziadana intenzita: %d\n\r",
+					ziadana_intenzita);
+			USART2_PutBuffer(string, size);
+		}
+
 		started = 0;
 		pos = 0;
 	}
 }
 
-void countCharacters(char *data, uint8_t len){
-	lowercase_count = 0;
-	uppercase_count = 0;
-	for(int i = 0; i<len; i++){
-		if((data[i] >= 'A') && (data[i] <= 'Z')){
-			uppercase_count++;
-		}
-		if((data[i] >= 'a') && (data[i] <= 'z')){
-			lowercase_count++;
+void parseCommand(char *data, uint8_t len){
+	char manual[] = "manual";
+	char automatic[] = "auto";
+	char PWMxx[] = "PWMxx";
+	char string[len-1];
+	for(int i = 1; i < len-1; i++){ // odstrihne $ znaky
+		string[i-1] = data[i];
+	}
+	string[len-2] = 0;
+	if (!strcmp(string, manual)){
+		rezim = 1;
+		ziadana_intenzita = aktualna_intenzita;
+	}
+	if (!strcmp(string, automatic)){
+		rezim = 0;
+	}
+	if (strcmp(string, PWMxx)<3){
+		int correct = 1;
+		for (int i = 0; i < len - 1; i++) {
+			if (i < 3 && string[i] != PWMxx[i]) { // preveri ci sa zacina na PWM
+				correct = 0;
+			}
+			if (i == 3 && string[i] >= '0' && string[i] <= '9' && correct){ // extrahovanie cisla z konca prikazu
+				ziadana_intenzita = (string[3] - 48) * 10;
+				if (string[4] >= '0' && string[4] <= '9') {	// osetrenie pripadu, ked do prikazu zadame iba jednociferne cislo + ignoruje pripadne zadanie "neciselneho" znaku
+					ziadana_intenzita += string[4] - 48;
+				} else {
+					ziadana_intenzita /= 10;
+				}
+			}
 		}
 	}
+}
+
+void setDutyCycle(uint8_t D){
+	LL_TIM_OC_SetCompareCH1(TIM2, D);
 }
 /* USER CODE END 4 */
 

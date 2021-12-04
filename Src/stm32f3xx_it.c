@@ -22,6 +22,7 @@
 #include "main.h"
 #include "usart.h"
 #include "stm32f3xx_it.h"
+#include "tim.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -242,14 +243,33 @@ void USART2_IRQHandler(void)
 /**
   * @brief This function handles TIM3 global interrupt.
   */
-void TIM3_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM3_IRQn 0 */
-
-  /* USER CODE END TIM3_IRQn 0 */
-  /* USER CODE BEGIN TIM3_IRQn 1 */
-
-  /* USER CODE END TIM3_IRQn 1 */
+void TIM2_IRQHandler(void)
+ {
+	if (LL_TIM_IsActiveFlag_UPDATE(TIM2)) {
+		if (rezim == 1){	// 1 = manualny
+			if (aktualna_intenzita < ziadana_intenzita) {
+				aktualna_intenzita += 1;
+			}
+			if (aktualna_intenzita > ziadana_intenzita) {
+				aktualna_intenzita -= 1;
+			}
+		}
+		if (rezim == 0) {	// 0 = automaticky
+			if (smer) {
+				aktualna_intenzita += 1;
+				if (aktualna_intenzita == 99) {
+					smer = 0;
+				}
+			} else {
+				aktualna_intenzita -= 1;
+				if (aktualna_intenzita == 0) {
+					smer = 1;
+				}
+			}
+		}
+		setDutyCycle(aktualna_intenzita);
+	}
+	LL_TIM_ClearFlag_UPDATE(TIM2);
 }
 
 /* USER CODE BEGIN 1 */

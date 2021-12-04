@@ -86,7 +86,10 @@ void Error_Handler(void);
                                                                  0 bit  for subpriority */
 #endif
 /* USER CODE BEGIN Private defines */
-
+int aktualna_intenzita;
+int ziadana_intenzita;
+int smer;
+int rezim;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
